@@ -6,9 +6,7 @@ const bodyParser = require('body-parser');
 const errorController = require('./controllers/error');
 const Product = require('./models/product');
 const User = require('./models/user');
-const Cart = require('./models/cart');
-const CartItem = require('./models/cart-item');
-const mongoConnect = require('./util/database').mongoConnect;
+const mongoose= require('mongoose');
 
 const app = express();
 
@@ -22,10 +20,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('64c2b9fa25187db6523a1385')
+  User.findById('64c38d3d01d4305bf1d6fdc6')
     .then(user => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
-      next();
+      req.user = user;
+      next(); 
     })
     .catch(err => console.log(err));
 });
@@ -36,7 +34,22 @@ app.use((req, res, next) => {
 app.use(errorController.get404);
 
 
-mongoConnect(()=>
-{
-    app.listen(3000);
-});
+mongoose.connect('mongodb+srv://asif:Asif6070@atlascluster.iko5pu8.mongodb.net/shop?retryWrites=true&w=majority')
+.then(res => {
+ User.findOne()
+ .then(user=>
+  { if(!user)
+    {
+  const user = new User({
+ name: 'asif',
+ email: 'asif@gmail.com',
+ cart:{
+  items: [] 
+ }})
+ user.save();
+    }})
+  app.listen(3000);
+  console.log("CONNECTED");
+})
+.catch(err=>console.log(err));
+
